@@ -1,0 +1,727 @@
+/* ================================================================
+   Nexa AI — login page styles
+   Palette (exact): #425B9A  #76C0EC  #FFF6DC  #FF95A5
+   Served as a plain public asset — no build step required.
+   ================================================================ */
+
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+:root{
+  --blue:  #425B9A;  /* primary deep blue   */
+  --sky:   #76C0EC;  /* bright sky accent   */
+  --cream: #FFF6DC;  /* warm cream base     */
+  --pink:  #FF95A5;  /* soft pink accent    */
+
+  /* Shades derived from the palette above (depth / text / shadow) */
+  --blue-deep: #2C3E6B;  /* button base + heading ink   */
+  --ink:       #26355C;  /* main text                   */
+  --pink-deep: #D96A7E;  /* success base + error accent */
+
+  --ease:   cubic-bezier(0.16, 1, 0.3, 1);      /* premium ease-out */
+  --spring: cubic-bezier(0.34, 1.8, 0.64, 1);   /* bouncy pop       */
+  --radius: 24px;
+}
+
+/* ============================================================
+   2. BASE (element-scoped resets only)
+   ============================================================ */
+*, *::before, *::after{ box-sizing: border-box; }
+html{ -webkit-text-size-adjust: 100%; }
+
+body{
+  margin: 0;
+  min-height: 100dvh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  overflow-x: hidden;
+  /* Cream base with soft sky + pink glows */
+  background:
+    radial-gradient(1000px 720px at 12% -5%,  rgba(118,192,236,.38), transparent 60%),
+    radial-gradient(950px 720px at 90% 110%,  rgba(255,149,165,.32), transparent 62%),
+    linear-gradient(160deg, #FFFAE9 0%, var(--cream) 55%, #FBEECB 100%);
+  background-attachment: fixed;
+}
+
+a{ color: var(--blue); text-decoration: none; }
+button{ font: inherit; }
+::selection{ background: var(--sky); color: var(--blue-deep); }
+
+.sr-only{
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+a:focus-visible,
+button:focus-visible,
+.remember input:focus-visible + .box{
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   3. ATMOSPHERE — neural canvas, grid, orbs, grain
+   ============================================================ */
+#neural{
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Faint blueprint grid, faded toward the edges */
+.grid-overlay{
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(66,91,154,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(66,91,154,.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(75% 65% at 50% 45%, #000 30%, transparent 100%);
+          mask-image: radial-gradient(75% 65% at 50% 45%, #000 30%, transparent 100%);
+}
+
+.ambient{ position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.orb{ position: absolute; border-radius: 50%; filter: blur(70px); will-change: transform; }
+.orb-sky{
+  width: 440px; height: 440px; top: -150px; left: -130px;
+  background: radial-gradient(circle at 35% 35%, rgba(118,192,236,.65), rgba(118,192,236,0) 68%);
+  animation: drift-a 14s ease-in-out infinite alternate;
+}
+.orb-pink{
+  width: 500px; height: 500px; bottom: -190px; right: -150px;
+  background: radial-gradient(circle at 60% 60%, rgba(255,149,165,.6), rgba(255,149,165,0) 68%);
+  animation: drift-b 18s ease-in-out infinite alternate;
+}
+.orb-blue{
+  width: 300px; height: 300px; top: 46%; left: 54%;
+  background: radial-gradient(circle, rgba(66,91,154,.16), rgba(66,91,154,0) 65%);
+  animation: drift-c 22s ease-in-out infinite alternate;
+}
+@keyframes drift-a{ from{ transform: translate(0,0) scale(1); }        to{ transform: translate(72px,48px) scale(1.12); } }
+@keyframes drift-b{ from{ transform: translate(0,0) scale(1.08); }    to{ transform: translate(-66px,-54px) scale(.94); } }
+@keyframes drift-c{ from{ transform: translate(-50%,-50%) scale(1); } to{ transform: translate(-38%,-62%) scale(1.18); } }
+
+/* Film grain — inline SVG turbulence */
+body::after{
+  content: "";
+  position: fixed; inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Soft blue-tinted vignette */
+body::before{
+  content: "";
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 42%, transparent 55%, rgba(66,91,154,.12) 100%);
+}
+
+/* ============================================================
+   4. SCENE & CARD — glass panel, rotating gradient border
+   ============================================================ */
+.scene{
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 28px 16px;
+  perspective: 1200px;
+}
+
+.card-tilt{
+  width: 100%;
+  max-width: 430px;
+  will-change: transform; /* JS writes rotateX / rotateY here */
+}
+
+/* Frame: a rotating conic-gradient light orbiting the card edge */
+.card-frame{
+  position: relative;
+  border-radius: calc(var(--radius) + 1px);
+  padding: 1px;
+  overflow: hidden;
+  background: rgba(66,91,154,.14);
+  box-shadow:
+    0 2px 4px rgba(66,91,154,.12),
+    0 18px 34px rgba(66,91,154,.18),
+    0 42px 80px -18px rgba(44,62,107,.35);
+  animation: card-in 1.1s var(--ease) both;
+}
+.card-frame::before{
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 160%; aspect-ratio: 1;
+  transform: translate(-50%,-50%);
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    rgba(118,192,236,.9) 60deg,
+    rgba(255,149,165,.75) 115deg,
+    transparent 175deg,
+    transparent 210deg,
+    rgba(66,91,154,.55) 265deg,
+    transparent 325deg);
+  animation: orbit 7s linear infinite;
+}
+@keyframes orbit{
+  from{ transform: translate(-50%,-50%) rotate(0deg); }
+  to  { transform: translate(-50%,-50%) rotate(360deg); }
+}
+@keyframes card-in{
+  from{ opacity: 0; transform: translateY(28px) rotateX(10deg) scale(.97); }
+  to  { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+}
+
+.card{
+  position: relative;
+  border-radius: var(--radius);
+  padding: 34px 34px 26px;
+  overflow: hidden;
+
+  /* Frosted glass over a warm cream gradient */
+  background: linear-gradient(165deg, rgba(255,253,244,.92) 0%, rgba(255,246,220,.88) 55%, rgba(255,240,205,.9) 100%);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(66,91,154,.12);
+}
+
+/* Cursor spotlight — follows the pointer via --mx / --my */
+.card::before{
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, -10%),
+    rgba(118,192,236,.22), rgba(118,192,236,0) 65%);
+  pointer-events: none;
+}
+
+/* Stitched dashed inner border (tactile detail) */
+.card::after{
+  content: "";
+  position: absolute; inset: 9px;
+  border: 1.5px dashed rgba(66,91,154,.18);
+  border-radius: 17px;
+  pointer-events: none;
+}
+
+.card-inner{ position: relative; z-index: 1; }
+
+/* Staggered fade-up entrance */
+.reveal{ animation: fade-up .8s var(--ease) var(--d, 0s) backwards; }
+@keyframes fade-up{
+  from{ opacity: 0; transform: translateY(14px); }
+  to  { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   5. CARD HEADER — brand mark + live status
+   ============================================================ */
+.card-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brand{
+  display: inline-flex; align-items: center; gap: 11px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--blue-deep);
+}
+.brand em{
+  font-style: normal;
+  background: linear-gradient(90deg, var(--blue), var(--pink-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Brand mark — gradient tile with an SVG neural-node glyph + pulse ring */
+.logo-mark{
+  position: relative;
+  width: 36px; height: 36px;
+  flex: none;
+  display: grid; place-items: center;
+  border-radius: 11px;
+  background: linear-gradient(140deg, var(--sky) 0%, var(--blue) 58%, var(--pink) 135%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -2px 4px rgba(44,62,107,.35),
+    0 0 18px rgba(118,192,236,.45),
+    0 5px 12px rgba(66,91,154,.3);
+}
+.logo-mark svg{ width: 21px; height: 21px; }
+.logo-mark::after{
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: 12px;
+  border: 1px solid rgba(118,192,236,.7);
+  animation: ring-pulse 2.8s var(--ease) infinite;
+}
+@keyframes ring-pulse{
+  0%  { transform: scale(1);    opacity: .8; }
+  70% { transform: scale(1.35); opacity: 0;  }
+  100%{ transform: scale(1.35); opacity: 0;  }
+}
+
+/* Status pill: LED + label + live latency (updated by JS) */
+.status{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(118,192,236,.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 2px rgba(66,91,154,.12),
+    0 2px 6px rgba(66,91,154,.12);
+  font-family: "JetBrains Mono", monospace;
+  font-size: .62rem; font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--blue-deep);
+  white-space: nowrap;
+}
+.led{ position: relative; width: 8px; height: 8px; flex: none; }
+.led-core{
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, var(--sky) 55%, var(--blue) 100%);
+  box-shadow:
+    0 0 9px 2px rgba(118,192,236,.75),
+    0 0 20px 6px rgba(118,192,236,.35),
+    inset 0 -1px 2px rgba(44,62,107,.4);
+}
+.led-halo{
+  position: absolute; top: 50%; left: 50%;
+  width: 22px; height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(118,192,236,.55) 0%, rgba(118,192,236,0) 68%);
+  animation: led-pulse 2s ease-in-out infinite;
+}
+@keyframes led-pulse{
+  0%  { transform: scale(.55); opacity: .9; }
+  70% { transform: scale(1.3);  opacity: 0;  }
+  100%{ transform: scale(1.3);  opacity: 0;  }
+}
+.status-latency{ color: var(--blue); letter-spacing: .06em; }
+
+/* ============================================================
+   6. HEADING + FLASH MESSAGE
+   ============================================================ */
+.heading{ margin-top: 26px; }
+.heading h1{
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+  color: var(--blue-deep);
+}
+.heading h1 .grad{
+  background: linear-gradient(92deg, var(--blue) 10%, var(--pink-deep) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.heading p{
+  margin: 8px 0 0;
+  font-size: .94rem;
+  line-height: 1.55;
+  color: rgba(38,53,92,.62);
+}
+
+/* Session flash (e.g. "Your password has been reset") */
+.flash{
+  margin-top: 18px;
+  padding: 11px 14px;
+  border-radius: 11px;
+  font-size: .86rem;
+  line-height: 1.45;
+  color: var(--blue-deep);
+  background: rgba(118,192,236,.18);
+  border: 1px solid rgba(118,192,236,.55);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* ============================================================
+   7. FORM — carved-in inputs with sky-blue focus glow
+   ============================================================ */
+form{ margin-top: 24px; }
+.field{ margin-top: 17px; }
+.field:first-child{ margin-top: 0; }
+
+.field label{
+  display: block;
+  margin-bottom: 8px;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(38,53,92,.55);
+}
+
+.control{ position: relative; display: flex; align-items: center; }
+.field-icon{
+  position: absolute; left: 14px;
+  width: 19px; height: 19px;
+  color: rgba(66,91,154,.4);
+  pointer-events: none;
+  transition: color .3s var(--ease);
+}
+.control:focus-within .field-icon{ color: var(--blue); }
+
+.field input{
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  font: inherit;
+  font-size: .95rem;
+  color: var(--ink);
+  caret-color: var(--blue);
+  border-radius: 13px;
+  border: 1px solid rgba(66,91,154,.28);
+  outline: none;
+
+  /* Recessed / carved-in on the cream surface */
+  background: linear-gradient(180deg, #F3EAC6 0%, #FBF2D5 100%);
+  box-shadow:
+    inset 0 3px 8px rgba(66,91,154,.16),
+    inset 0 1px 3px rgba(66,91,154,.22),
+    inset 0 -1px 0 rgba(255,255,255,.7),
+    0 1px 0 rgba(255,255,255,.8);
+
+  transition:
+    box-shadow .35s var(--ease),
+    border-color .35s var(--ease),
+    transform .35s var(--ease);
+}
+.field input::placeholder{ color: rgba(38,53,92,.32); }
+
+/* Focus: sky ring glow + 1px lift out of the recess */
+.field input:focus{
+  border-color: rgba(118,192,236,.9);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 3px 8px rgba(66,91,154,.14),
+    inset 0 1px 3px rgba(66,91,154,.18),
+    0 1px 0 rgba(255,255,255,.8),
+    0 0 0 3px rgba(118,192,236,.35),
+    0 0 24px rgba(118,192,236,.35);
+}
+
+/* Keep the carved look under browser autofill */
+.field input:-webkit-autofill{
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 60px #FBF2D5 inset, inset 0 3px 8px rgba(66,91,154,.16);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Error state (pink family) */
+.field.has-error input{
+  border-color: rgba(217,106,126,.85);
+  box-shadow:
+    inset 0 3px 8px rgba(66,91,154,.14),
+    inset 0 1px 3px rgba(66,91,154,.18),
+    0 1px 0 rgba(255,255,255,.8),
+    0 0 0 3px rgba(255,149,165,.35);
+}
+.error, .hint{
+  margin: 8px 0 0;
+  font-size: .8rem;
+  line-height: 1.4;
+}
+.error{ color: #BE4258; }
+.hint{
+  font-family: "JetBrains Mono", monospace;
+  font-size: .7rem;
+  letter-spacing: .06em;
+  color: var(--pink-deep);
+}
+.error[hidden], .hint[hidden]{ display: none !important; }
+
+/* Shake feedback on invalid submit (transform only) */
+.field.shake .control{ animation: shake .45s var(--ease) both; }
+@keyframes shake{
+  10%, 90%{ transform: translateX(-1px); }
+  20%, 80%{ transform: translateX(2px); }
+  30%, 50%, 70%{ transform: translateX(-4px); }
+  40%, 60%{ transform: translateX(4px); }
+}
+
+/* Password visibility toggle */
+.control.has-toggle input{ padding-right: 50px; }
+.toggle-pw{
+  position: absolute; right: 6px;
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 10px;
+  background: transparent;
+  color: rgba(66,91,154,.5);
+  cursor: pointer;
+  transition: background-color .25s var(--ease), color .25s var(--ease), transform .15s var(--ease);
+}
+.toggle-pw:hover{ background: rgba(118,192,236,.18); color: var(--blue-deep); }
+.toggle-pw:active{ transform: scale(.92); }
+.toggle-pw svg{ width: 20px; height: 20px; }
+.toggle-pw .icon-eye-off{ display: none; }
+.toggle-pw[aria-pressed="true"] .icon-eye{ display: none; }
+.toggle-pw[aria-pressed="true"] .icon-eye-off{ display: block; }
+
+/* ============================================================
+   8. REMEMBER / FORGOT ROW
+   ============================================================ */
+.row{
+  margin-top: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.remember{
+  position: relative;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: .87rem;
+  color: rgba(38,53,92,.75);
+  cursor: pointer;
+  user-select: none;
+}
+.remember input{
+  position: absolute; left: 0; top: 50%;
+  width: 22px; height: 22px; margin: 0;
+  transform: translateY(-50%);
+  opacity: 0; cursor: pointer;
+}
+/* Embossed box that fills blue when checked, bouncy check pop */
+.remember .box{
+  width: 22px; height: 22px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 7px;
+  border: 1px solid rgba(66,91,154,.3);
+  background: linear-gradient(180deg, #FFFFFF, #F6EDCB);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(66,91,154,.14),
+    0 2px 0 rgba(66,91,154,.28),
+    0 3px 6px rgba(66,91,154,.15);
+  transition: background .3s var(--ease), box-shadow .3s var(--ease), transform .15s var(--ease);
+}
+.remember:active .box{ transform: translateY(1px); }
+.remember .box svg{
+  width: 12px; height: 12px;
+  opacity: 0; transform: scale(.3);
+  transition: opacity .2s var(--ease), transform .35s var(--spring);
+}
+.remember input:checked + .box{
+  background: linear-gradient(180deg, var(--sky), var(--blue));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -2px 4px rgba(44,62,107,.35),
+    0 2px 0 var(--blue-deep),
+    0 0 14px rgba(118,192,236,.5);
+}
+.remember input:checked + .box svg{ opacity: 1; transform: scale(1); }
+
+.forgot{ font-size: .87rem; font-weight: 500; transition: color .25s var(--ease); }
+.forgot:hover{ color: var(--blue-deep); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================================
+   9. PRIMARY CTA — pressable physical key (blue)
+   ============================================================ */
+.btn-primary{
+  position: relative;
+  width: 100%;
+  margin-top: 26px;
+  padding: 15px 20px;
+  border: 1px solid rgba(44,62,107,.45);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 1rem; font-weight: 600; letter-spacing: .01em;
+  color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(44,62,107,.5);
+
+  /* Blue gradient keycap + gloss + solid 6px base */
+  background: linear-gradient(180deg, #5D78B8 0%, var(--blue) 55%, #38507F 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    inset 0 12px 14px -10px rgba(255,255,255,.4),
+    inset 0 -3px 6px rgba(44,62,107,.4),
+    0 6px 0 var(--blue-deep),
+    0 16px 28px rgba(66,91,154,.35),
+    0 0 22px rgba(118,192,236,.3);
+
+  transition:
+    transform .18s var(--ease),
+    box-shadow .18s var(--ease),
+    background .45s var(--ease),
+    filter .3s var(--ease);
+}
+/* Hover: lifts 2px, base grows */
+.btn-primary:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    inset 0 12px 14px -10px rgba(255,255,255,.4),
+    inset 0 -3px 6px rgba(44,62,107,.4),
+    0 8px 0 var(--blue-deep),
+    0 22px 34px rgba(66,91,154,.4),
+    0 0 32px rgba(118,192,236,.45);
+}
+/* Active: pressed down 4px, base nearly swallowed */
+.btn-primary:active{
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    inset 0 -3px 6px rgba(44,62,107,.4),
+    0 2px 0 var(--blue-deep),
+    0 8px 14px rgba(66,91,154,.3);
+}
+/* Shine sweep on hover */
+.btn-primary::after{
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.42) 50%, transparent 68%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.btn-primary:hover::after{
+  transform: translateX(130%);
+  transition: transform .7s var(--ease);
+}
+.btn-primary:disabled{ cursor: default; }
+
+.btn-label{ position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 9px; }
+.btn-label .arrow{ width: 17px; height: 17px; transition: transform .3s var(--ease); }
+.btn-primary:hover .arrow{ transform: translateX(3px); }
+.btn-label .check{ width: 18px; height: 18px; display: none; }
+.btn-primary.is-success .check{ display: block; }
+.btn-primary.is-success .arrow{ display: none; }
+
+/* Loading spinner (transform-only rotation) */
+.spinner{
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  display: none;
+  animation: spin .7s linear infinite;
+}
+.btn-primary.is-loading .spinner{ display: block; }
+.btn-primary.is-loading .arrow{ display: none; }
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+/* ============================================================
+   10. DIVIDER, SOCIAL, FOOTER
+   ============================================================ */
+.divider{
+  margin-top: 26px;
+  display: flex; align-items: center; gap: 14px;
+}
+.divider::before, .divider::after{ content: ""; flex: 1; height: 1px; }
+.divider::before{ background: linear-gradient(90deg, transparent, rgba(66,91,154,.28)); }
+.divider::after { background: linear-gradient(90deg, rgba(66,91,154,.28), transparent); }
+.divider span{
+  font-family: "JetBrains Mono", monospace;
+  font-size: .64rem; font-weight: 500;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(38,53,92,.45);
+  white-space: nowrap;
+}
+
+.social{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.btn-social{
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(66,91,154,.3);
+  cursor: pointer;
+  font-size: .92rem; font-weight: 600;
+  color: var(--blue-deep);
+  /* Soft raised slab on the cream surface */
+  background: linear-gradient(180deg, #FFFFFF 0%, #FBF2D5 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(66,91,154,.1),
+    0 4px 0 #D9C99A,
+    0 10px 18px rgba(66,91,154,.18);
+  transition: transform .16s var(--ease), box-shadow .16s var(--ease), border-color .3s var(--ease);
+}
+.btn-social svg{ width: 19px; height: 19px; flex: none; }
+.btn-social:hover{
+  transform: translateY(-1px);
+  border-color: rgba(118,192,236,.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 4px rgba(66,91,154,.1),
+    0 5px 0 #D9C99A,
+    0 14px 22px rgba(66,91,154,.22),
+    0 0 16px rgba(118,192,236,.25);
+}
+/* Physical press-down on click */
+.btn-social:active{
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    inset 0 -1px 2px rgba(66,91,154,.12),
+    0 1px 0 #D9C99A,
+    0 5px 10px rgba(66,91,154,.15);
+}
+
+.card-footer{
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(66,91,154,.12);
+  text-align: center;
+  font-size: .9rem;
+  color: rgba(38,53,92,.55);
+}
+.card-footer a{ font-weight: 600; transition: color .25s var(--ease); }
+.card-footer a:hover{ color: var(--blue-deep); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================================
+   11. RESPONSIVE + REDUCED MOTION
+   ============================================================ */
+@media (max-width: 480px){
+  .card{ padding: 28px 22px 22px; }
+  .card::after{ inset: 7px; }
+  .heading h1{ font-size: 1.6rem; }
+  .status .status-label{ display: none; } /* keep LED + latency on tiny screens */
+}
+@media (max-width: 360px){
+  .social{ grid-template-columns: 1fr; }
+  .row{ justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .reveal{ opacity: 1; }
+}
