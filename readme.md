@@ -23,7 +23,7 @@ Nexa AI Skeuomorphic Login is a login-only page with raised buttons, soft depth,
 
 ![Nexa AI login page screenshot](/pic/Screenshot_15-10-2026_233857_.jpeg)
 
-> Placeholder: save a screenshot of the page as `docs/screenshot.png` and it will appear here.
+
 
 ## Quick Start (Static Preview, about 1 minute)
 
